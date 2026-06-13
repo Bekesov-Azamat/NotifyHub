@@ -32,7 +32,6 @@ class NotificationSenderService
             ]);
         } catch (Throwable $exception) {
             $notification->update([
-                'status' => NotificationStatus::Failed,
                 'last_error' => $exception->getMessage(),
             ]);
 

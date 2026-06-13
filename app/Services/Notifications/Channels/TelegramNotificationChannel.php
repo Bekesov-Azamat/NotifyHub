@@ -8,7 +8,7 @@ class TelegramNotificationChannel implements NotificationChannelInterface
 {
     public function send(Notification $notification): void
     {
-        // Fake email sending.
-        // Real integration can be added here without changing teh service layer
+        // Fake telegram sending.
+        // Real integration can be added here without changing the service layer.
     }
 }
