@@ -6,7 +6,20 @@ use App\Enums\NotificationChannel;
 use App\Enums\NotificationStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property NotificationChannel $channel
+ * @property string $text
+ * @property NotificationStatus $status
+ * @property int $attempts
+ * @property string|null $last_error
+ * @property Carbon|null $sent_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 class Notification extends Model
 {
     use HasFactory;
@@ -21,6 +34,9 @@ class Notification extends Model
         'sent_at',
     ];
 
+    /**
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [

@@ -16,17 +16,20 @@ class NotificationResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        /** @var Notification $notification */
+        $notification = $this->resource;
+
         return [
-            'id' => $this->id,
-            'user_id' => $this->user_id,
-            'channel' => $this->channel->value,
-            'text' => $this->text,
-            'status' => $this->status->value,
-            'attempts' => $this->attempts,
-            'last_error' => $this->last_error,
-            'sent_at' => $this->sent_at?->toISOString(),
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'id' => $notification->id,
+            'user_id' => $notification->user_id,
+            'channel' => $notification->channel->value,
+            'text' => $notification->text,
+            'status' => $notification->status->value,
+            'attempts' => $notification->attempts,
+            'last_error' => $notification->last_error,
+            'sent_at' => $notification->sent_at?->toISOString(),
+            'created_at' => $notification->created_at?->toISOString(),
+            'updated_at' => $notification->updated_at?->toISOString(),
         ];
     }
 }

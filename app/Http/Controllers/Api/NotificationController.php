@@ -8,11 +8,15 @@ use App\Http\Requests\ListUserNotificationsRequest;
 use App\Http\Requests\StoreNotificationRequest;
 use App\Http\Resources\NotificationResource;
 use App\Models\Notification;
+use App\Services\Notifications\NotificationSenderService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-
 
 class NotificationController extends Controller
 {
+    public function __construct(
+        private readonly NotificationSenderService $notificationSender,
+    ) {}
+
     public function store(StoreNotificationRequest $request): NotificationResource
     {
         $notification = Notification::create([
@@ -22,7 +26,9 @@ class NotificationController extends Controller
             'status' => NotificationStatus::Pending,
         ]);
 
-        return NotificationResource::make($notification);
+        $this->notificationSender->send($notification);
+
+        return NotificationResource::make($notification->refresh());
     }
 
     public function status(Notification $notification): NotificationResource
