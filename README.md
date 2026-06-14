@@ -1,66 +1,399 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Notification Service
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Описание проекта
 
-## About Laravel
+Тестовое задание, реализованное на Laravel 11 и PHP 8.2.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Проект представляет собой сервис обработки уведомлений с REST API, поддержкой нескольких каналов доставки, асинхронной обработкой через очереди и дополнительной системой генерации отчётов.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Основной акцент при реализации был сделан не только на выполнение требований задания, но и на читаемость кода, расширяемость архитектуры и разделение ответственности между компонентами.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+Используемый стек
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.2
+- Laravel 11
+- PostgreSQL
+- Docker / Docker Compose
+- Eloquent ORM
+- Database Queue
+- FormRequest Validation
+- PHPUnit
+- PHPStan (Level 5)
+- Laravel Pint
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Repository
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- README.md — проект и архитектура
+- API_EXAMPLES.md — примеры использования REST API
+---
 
-## Laravel Sponsors
+Реализованный функционал
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+1. Создание уведомлений
 
-### Premium Partners
+Поддерживается создание уведомления со следующими данными:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- ID пользователя;
+- канал доставки;
+- текст сообщения.
 
-## Contributing
+После создания уведомление получает статус "pending" и помещается в очередь на обработку.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+2. Получение статуса уведомления
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Реализован REST API для получения текущего состояния уведомления.
 
-## Security Vulnerabilities
+Поддерживаемые статусы:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- "pending"
+- "processing"
+- "sent"
+- "failed"
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+3. История уведомлений пользователя
+
+Реализован просмотр истории уведомлений пользователя.
+
+Поддерживается фильтрация:
+
+- по статусу;
+- по каналу доставки.
+
+---
+
+4. Поддержка нескольких каналов
+
+Реализованы два канала:
+
+- Email
+- Telegram
+
+Реальная отправка намеренно заменена заглушками в соответствии с требованиями тестового задания.
+
+Архитектура позволяет без изменения существующей логики добавлять новые способы доставки.
+
+Например:
+
+- SMS;
+- Push;
+- WhatsApp;
+- WebSocket.
+
+---
+
+5. Асинхронная обработка
+
+После создания уведомления автоматически создаётся Job и помещается в очередь.
+
+Обработка выполняется отдельным Worker.
+
+Реализована логика повторных попыток доставки.
+
+При успешной обработке:
+
+- статус меняется на "sent";
+- увеличивается количество попыток;
+- сохраняется время успешной отправки.
+
+При возникновении ошибки:
+
+- увеличивается количество попыток;
+- сохраняется причина ошибки;
+- после исчерпания количества попыток уведомление получает статус "failed".
+
+---
+
+Дополнительное задание
+
+Реализована система генерации отчётов.
+
+Поддерживается:
+
+- создание задания;
+- получение статуса генерации;
+- скачивание готового файла.
+
+Отчёт сохраняется во внутреннюю файловую систему приложения.
+
+Поддерживается фильтрация по периоду.
+
+Отчёт содержит:
+
+- ID пользователя;
+- выбранный период;
+- общее количество уведомлений;
+- общее количество ошибок;
+- количество уведомлений по каждому каналу;
+- количество ошибок по каждому каналу;
+- время генерации отчёта.
+
+---
+
+Архитектурные решения
+
+NotificationChannelInterface
+
+Для каждого канала доставки используется единый контракт ("NotificationChannelInterface").
+
+Каждая реализация инкапсулирует собственную логику отправки.
+
+Это позволяет масштабировать систему без изменения существующего кода.
+
+---
+
+NotificationChannelFactory
+
+Создание конкретной реализации канала выполняется через отдельную фабрику ("NotificationChannelFactory").
+
+Добавление нового канала требует создания новой реализации и регистрации её в фабрике без изменения остальной бизнес-логики.
+
+---
+
+NotificationSenderService
+
+Основная бизнес-логика отправки уведомлений вынесена в отдельный сервис.
+
+Job отвечает только за выполнение задачи очереди и не содержит бизнес-логики.
+
+Такой подход:
+
+- упрощает тестирование;
+- уменьшает связанность компонентов;
+- делает код проще для сопровождения;
+- облегчает дальнейшее расширение проекта.
+
+---
+
+Queue
+
+Отправка уведомлений реализована асинхронно.
+
+HTTP-запрос не ожидает завершения отправки, а сразу возвращает результат создания уведомления.
+
+Обработка выполняется отдельным Worker.
+
+---
+
+GenerateNotificationReportJob
+
+Генерация отчётов также реализована через отдельную очередь.
+
+Во время выполнения используются состояния:
+
+- "pending"
+- "processing"
+- "completed"
+- "failed"
+
+При ошибке причина сохраняется в поле "last_error".
+
+Дополнительно реализована защита от создания нескольких одинаковых активных отчётов для одного пользователя за одинаковый период.
+
+---
+
+Проверка качества
+
+PHPUnit
+
+Проект содержит:
+
+- функциональные тесты Notification API;
+- функциональные тесты Report API;
+- unit-тесты NotificationSenderService;
+- unit-тесты NotificationChannelFactory;
+- unit-тесты Email Channel;
+- unit-тесты Telegram Channel;
+- проверку генерации отчётов;
+- проверку скачивания отчётов;
+- проверку валидации;
+- проверку обработки ошибок;
+- проверку защиты от создания дублирующихся активных отчётов.
+
+На момент завершения проекта:
+
+- 18 тестов;
+- 72 assertions;
+- все тесты проходят успешно.
+
+---
+
+PHPStan
+
+Используется статический анализ кода.
+
+Проект проходит проверку на уровне:
+
+PHPStan Level 5
+
+без ошибок.
+
+---
+
+Laravel Pint
+
+Для всего проекта используется единый стиль оформления кода.
+
+Перед финальной сдачей проект проходит автоматическую проверку форматирования.
+
+---
+
+Запуск проекта
+
+1. Клонировать репозиторий
+
+git clone <repository-url>
+cd notifyhub
+
+2. Создать .env
+
+cp .env.example .env
+
+3. Запустить Docker
+
+docker compose up -d --build
+
+4. Установить зависимости
+
+composer install
+
+5. Сгенерировать ключ приложения
+
+php artisan key:generate
+
+6. Выполнить миграции
+
+php artisan migrate
+
+7. Запустить Worker
+
+php artisan queue:work
+
+---
+
+Основные REST API
+
+Уведомления
+
+Создание уведомления:
+
+POST /api/notifications
+
+Получение статуса:
+
+GET /api/notifications/{id}/status
+
+Получение истории пользователя:
+
+GET /api/users/{userId}/notifications
+
+---
+
+Отчёты
+
+Создание задания:
+
+POST /api/reports
+
+Получение статуса:
+
+GET /api/reports/{id}
+
+Скачивание:
+
+GET /api/reports/{id}/download
+
+---
+
+Возможные улучшения production-версии
+
+При дальнейшем развитии проекта можно рассмотреть следующие улучшения.
+
+Очереди
+
+- переход с Database Queue на Redis;
+- использование RabbitMQ как брокера сообщений;
+- использование Apache Kafka при высокой нагрузке и event-driven архитектуре;
+- выделение отдельных очередей для различных каналов доставки.
+
+Доставка уведомлений
+
+- интеграция с SMTP/Mailgun/Amazon SES;
+- интеграция с Telegram Bot API;
+- поддержка SMS;
+- поддержка Push-уведомлений;
+- поддержка WhatsApp.
+
+Надёжность
+
+- idempotency для защиты от повторной обработки;
+- отдельная история попыток доставки;
+- exponential backoff;
+- Dead Letter Queue (DLQ);
+- автоматическая повторная обработка временных ошибок.
+
+Производительность
+
+- Redis Cache;
+- дополнительные индексы БД;
+- оптимизация SQL-запросов;
+- горизонтальное масштабирование Worker-процессов.
+
+Мониторинг
+
+- Prometheus;
+- Grafana;
+- ELK Stack;
+- Loki;
+- централизованный сбор метрик и логов.
+
+API
+
+- OpenAPI / Swagger;
+- версионирование API;
+- расширенная пагинация;
+- rate limiting;
+- API-документация.
+
+Инфраструктура
+
+- Docker Healthcheck;
+- GitHub Actions;
+- CI/CD;
+- автоматический запуск тестов;
+- автоматический запуск PHPStan;
+- автоматический запуск Pint;
+- подготовка к Kubernetes.
+
+Безопасность
+
+- JWT / OAuth2;
+- Audit Log;
+- централизованное логирование;
+- мониторинг подозрительных операций;
+- дополнительные механизмы защиты API.
+
+---
+
+Что было важно при реализации
+
+При разработке основной целью было не только реализовать работающий REST API, но и построить решение, которое можно без существенных изменений развивать дальше.
+
+Особое внимание уделялось:
+
+- разделению ответственности между компонентами;
+- расширяемости архитектуры;
+- минимизации связанности;
+- читаемости кода;
+- удобству сопровождения;
+- тестируемости;
+- качеству реализации.
+
+Логика разделена между контроллерами, FormRequest, сервисами, очередями, фабрикой и отдельными реализациями каналов доставки.
+
+Проект проходит автоматические тесты, статический анализ и проверку code style, а архитектурные решения ориентированы на дальнейшее масштабирование и развитие системы.
