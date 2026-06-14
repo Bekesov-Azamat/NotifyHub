@@ -28,7 +28,8 @@ class GenerateNotificationReportJob implements ShouldQueue
                 'last_error' => null,
             ]);
 
-            $query = Notification::query();
+            $query = Notification::query()
+                ->where('user_id', $reportJob->user_id);
 
             if ($reportJob->from_date !== null) {
                 $query->where('created_at', '>=', $reportJob->from_date);
@@ -37,6 +38,12 @@ class GenerateNotificationReportJob implements ShouldQueue
             if ($reportJob->to_date !== null) {
                 $query->where('created_at', '<=', $reportJob->to_date);
             }
+
+            $totalNotifications = (clone $query)->count();
+
+            $totalErrors = (clone $query)
+                ->where('status', 'failed')
+                ->count();
 
             $notificationsByChannel = (clone $query)
                 ->selectRaw('channel, COUNT(*) as total')
@@ -50,10 +57,13 @@ class GenerateNotificationReportJob implements ShouldQueue
                 ->pluck('total', 'channel');
 
             $reportData = [
+                'user_id' => $reportJob->user_id,
                 'period' => [
                     'from_date' => $reportJob->from_date?->toISOString(),
                     'to_date' => $reportJob->to_date?->toISOString(),
                 ],
+                'total_notifications' => $totalNotifications,
+                'total_errors' => $totalErrors,
                 'notifications_by_channel' => $notificationsByChannel,
                 'errors_by_channel' => $errorsByChannel,
                 'generated_at' => now()->toISOString(),

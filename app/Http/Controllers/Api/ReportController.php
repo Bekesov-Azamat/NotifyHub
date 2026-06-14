@@ -8,17 +8,38 @@ use App\Http\Requests\CreateReportRequest;
 use App\Http\Resources\ReportJobResource;
 use App\Jobs\GenerateNotificationReportJob;
 use App\Models\ReportJob;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 
 class ReportController extends Controller
 {
-    public function store(CreateReportRequest $request): ReportJobResource
+    public function store(CreateReportRequest $request): ReportJobResource|JsonResponse
     {
+        $userId = $request->integer('user_id');
+        $fromDate = $request->date('from_date');
+        $toDate = $request->date('to_date');
+
+        $activeReportExists = ReportJob::query()
+            ->where('user_id', $userId)
+            ->where('from_date', $fromDate)
+            ->where('to_date', $toDate)
+            ->whereIn('status', [
+                ReportStatus::Pending,
+                ReportStatus::Processing,
+            ])
+            ->exists();
+
+        if ($activeReportExists) {
+            return response()->json([
+                'message' => 'Report generation for this period is already in progress.',
+            ], Response::HTTP_CONFLICT);
+        }
+
         $reportJob = ReportJob::create([
-            'user_id' => $request->integer('user_id'),
-            'from_date' => $request->date('from_date'),
-            'to_date' => $request->date('to_date'),
+            'user_id' => $userId,
+            'from_date' => $fromDate,
+            'to_date' => $toDate,
             'status' => ReportStatus::Pending,
         ]);
 
@@ -44,7 +65,7 @@ class ReportController extends Controller
 
         return response(
             Storage::disk('local')->get($reportJob->file_path),
-            200,
+            Response::HTTP_OK,
             [
                 'Content-Type' => 'application/json',
                 'Content-Disposition' => 'attachment; filename="notification-report-'.$reportJob->id.'.json"',
